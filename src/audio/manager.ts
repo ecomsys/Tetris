@@ -1,0 +1,141 @@
+import rawConfig from "@/audio/musicConfig.json";
+import { BaseUrlResolver } from "@/utils/resolvers";
+
+type MusicConfig = {
+  tracks: string[];
+};
+const musicConfig = rawConfig as MusicConfig;
+
+let audioUnlocked = false;
+
+// хранилище активных аудио
+const activeAudios: Map<string, HTMLAudioElement[]> = new Map();
+
+const getRandomTrack = (): string => {
+  const tracks = musicConfig.tracks;
+  const index = Math.floor(Math.random() * tracks.length);
+  return tracks[index];
+};
+
+// ---------- UNLOCK ----------
+export const unlockAudio = async (src?: string) => {
+  if (audioUnlocked) return;
+
+  let srcResolve;
+  if(src) srcResolve = BaseUrlResolver(src);
+
+  const audio = new Audio(srcResolve || "");
+  try {
+    await audio.play();
+    audio.pause();
+    audio.currentTime = 0;
+    audioUnlocked = true;
+  } catch {
+    // игнорируем ошибки autoplay policy
+  }
+};
+
+// ---------- PLAY ----------
+export const playSound = async (
+  src: string,
+  options?: {
+    volume?: number;
+    playbackRate?: number;
+    loop?: boolean;
+  }
+) => {
+  // гарантируем unlock перед проигрыванием
+  if (!audioUnlocked) {
+    await unlockAudio(src);
+  }
+
+  const audio = new Audio(src);
+
+  if (options?.volume !== undefined) {
+    audio.volume = options.volume;
+  }
+
+  if (options?.playbackRate !== undefined) {
+    audio.playbackRate = options.playbackRate;
+  }
+
+  if (options?.loop) {
+    audio.loop = options.loop;
+  }
+
+  try {
+    await audio.play();
+  } catch {
+    // вв
+  }
+
+  // сохраняем ссылку
+  if (!activeAudios.has(src)) {
+    activeAudios.set(src, []);
+  }
+
+  activeAudios.get(src)!.push(audio);
+};
+
+// ---------- STOP ----------
+export const stopSound = (src: string) => {
+  const audios = activeAudios.get(src);
+  if (!audios) return;
+
+  audios.forEach((audio) => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+
+  activeAudios.delete(src);
+};
+
+// ---------- STOP ALL ----------
+export const stopAllSounds = () => {
+  activeAudios.forEach((audios) => {
+    audios.forEach((audio) => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+  });
+
+  activeAudios.clear();
+};
+
+let currentMusic: HTMLAudioElement | null = null;
+
+export const playMusic = async () => {
+  if (!audioUnlocked) {
+    await unlockAudio();
+  }
+
+  if (currentMusic) {
+    return; // уже играет — не трогаем
+  }
+
+  const src = getRandomTrack();
+
+  const audio = new Audio(src);
+  audio.loop = false;
+
+  currentMusic = audio;
+
+  audio.addEventListener("ended", () => {
+    currentMusic = null; // важно!
+    playMusic(); // следующий трек
+  });
+
+  try {
+    await audio.play();
+  } catch {
+    // аав
+  }
+};
+
+export const stopMusic = () => {
+  if (currentMusic) {
+    currentMusic.pause();
+    currentMusic.currentTime = 0;
+    currentMusic = null;
+  }
+};

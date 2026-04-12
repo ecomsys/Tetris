@@ -1,0 +1,28 @@
+RewriteEngine On
+
+# =========================
+# 1. SPA ROUTING (React / Vite)
+# =========================
+
+# если файл или папка реально существует — НЕ трогаем
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# =========================
+# 2. НЕ ЛОМАТЬ ИГРОВЫЕ АССЕТЫ
+# =========================
+
+# не трогаем game assets
+RewriteCond %{REQUEST_URI} !^/games/game/assets/
+RewriteCond %{REQUEST_URI} !^/games/game/static/
+
+# не трогаем файлы движка и ассеты
+RewriteCond %{REQUEST_URI} !^/games/game/.*\.(js|css|wasm|json|map|png|jpg|jpeg|svg|ico)$
+
+# =========================
+# 3. SPA FALLBACK
+# =========================
+
+RewriteRule ^ /games/game/index.html [L]
+
