@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useSessionStore } from "@/stores/session.store";
 import { useGameStore } from "@/stores/game.store";
 
-import { createTetrisState } from "@/game/tetris/factory/createTetrisState";
+import { createTetrisState } from "@/game/factory/createTetrisState";
 
 export const useAppBootstrap = () => {
   useEffect(() => {

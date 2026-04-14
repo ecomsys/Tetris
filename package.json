@@ -1,5 +1,5 @@
 {
-  "name": "game",
+  "name": "tetris",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -10,13 +10,14 @@
     "preview": "vite preview",
     "svg": "node .npm/svg.js"
   },
+  "author": "ecomsys",
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "framer-motion": "^12.38.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0",
     "tailwindcss": "^4.1.18",
-    "framer-motion": "^12.38.0",
     "zustand": "^5.0.10"
   },
   "devDependencies": {
@@ -29,6 +30,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "react-confetti": "^6.4.0",
     "svg-sprite": "^2.0.4",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3",

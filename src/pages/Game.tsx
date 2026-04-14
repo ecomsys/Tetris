@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Board } from "../components/Board";
 
@@ -9,113 +9,47 @@ import GameHeader from "@/components/Header";
 import GameStatsPanel from "@/components/StatsPanel";
 import { PauseOverlay } from "@/components/PauseOverlay";
 
-import { TetrisEngine } from "@/game/tetris/engine";
-
 import { useSessionStore } from "@/stores/session.store";
 import { useSettingsStore } from "@/stores/settings.store";
 import { useGameStore } from "@/stores/game.store";
 
-import { InputController } from "@/game/tetris/engine/input/input.controller";
+import { useGameLoop } from "@/hooks/useGameLoop";
+import { useGameInput } from "@/hooks/useGameInput";
+
+import { useSwipeControls } from "@/hooks/useSwipeControls";
 
 export default function Game() {
+    
   const [showLevelUp, setShowLevelUp] = useState(false);
+
   const session = useSessionStore((s) => s.session);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const resumeGame = useGameStore((s) => s.resumeGame);
+
   const game = useGameStore((s) =>
     s.currentGameId ? s.games[s.currentGameId] : null
   );
-  const updateGame = useGameStore((s) => s.updateGame);
-
-  /* ===================== */
-  /* GAME LOOP */
-  /* ===================== */
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const current = useGameStore.getState().getCurrentGame();
-
-      if (!current || current.status !== "running") return;
-
-      const nextState = TetrisEngine.tick(current.data);
-      const leveledUp = nextState.level > current.data.level;
-
-      if (leveledUp) {
-        setShowLevelUp(true);
-      }
-      updateGame(current.id, {
-        data: nextState,
-      });
-      if (nextState.isGameOver) {
-        useGameStore.getState().setStatus(current.id, "finished");
-      }
-    }, 16);
-
-    return () => clearInterval(interval);
-  }, []);
-
 
   const isPaused = game?.status === "paused";
   const isFinished = game?.status === "finished" || false;
   const isReady = !!session?.userId && !!game;
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      switch (e.code) {
-        case "ArrowLeft":
-          InputController.setKey("left", true);
-          break;
+  const handleLevelUp = () => {
+    setShowLevelUp(true);
+  };
 
-        case "ArrowRight":
-          InputController.setKey("right", true);
-          break;
+  useGameLoop(handleLevelUp);
+  useGameInput();
+  useSwipeControls();
 
-        case "ArrowDown":
-          InputController.setKey("down", true);
-          break;
-
-        case "ArrowUp":
-          InputController.press("rotate");
-          break;
-
-        case "Space":
-        case " ":
-        case "Spacebar":
-          InputController.press("hardDrop");
-          break;
-      }
-    };
-
-    const up = (e: KeyboardEvent) => {
-      switch (e.code) {
-        case "ArrowLeft":
-          InputController.setKey("left", false);
-          break;
-
-        case "ArrowRight":
-          InputController.setKey("right", false);
-          break;
-
-        case "ArrowDown":
-          InputController.setKey("down", false);
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-
-    return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-    };
-  }, []);
-
-  if (!game) return <div>No game</div>;
+  if (!game) 
+    return (
+    <div className="flex items-center justify-center text-center h-full min-h-[100dvh] 
+    text-5xl text-red-700 font-bold">Игра не найдена !</div>
+  );
 
   const handleRestart = () => {
     if (!session?.userId || !game) return;
-
     useGameStore.getState().resetGame(game.id);
   };
 
@@ -131,44 +65,48 @@ export default function Game() {
 
   if (!isReady) return null;
 
-
-
   return (
-    <div className="flex flex-col h-[100dvh] px-2 py-2 gap-2
+    <div className="flex flex-col h-[100dvh] px-2 py-1 md:py-2 gap-1
     sm:px-4">
 
       {/* HEADER */}
       <GameHeader
         className="max-w-7xl mx-auto w-full"
-        gameName="Game (unknown)"
+        gameName="Тетрис"
         onRestart={handleRestart}
       />
 
       {/* MAIN */}
-      <div className="flex flex-col gap-3 max-w-6xl mx-auto w-full flex-1 min-h-0 
-      md:flex-row md:justify-center">
+      <div className="flex flex-col gap-1 md:gap-3 max-w-6xl mx-auto w-full flex-1 min-h-0
+      sm:flex-row sm:justify-center">
 
         {/* GAME BOARD */}
         <Board
           board={game.data.board}
           piece={game.data.currentPiece}
+          orderClasses="order-2 sm:order-1"
         />
 
         {/* STATE GAME */}
         <GameStatsPanel
           status={game.status}
-          players={game.players}
-
+          speed={game.data.dropInterval}
           score={game.data.score}
           level={game.data.level}
           linesCleared={game.data.linesCleared}
           nextPiece={game.data.nextPiece}
+          orderClasses="order-1 sm:order-2"
         />
       </div>
 
       {/* LOSE MODAL */}
       <LoseModal
-        isOpen={isFinished || false}
+        isOpen={isFinished}
+        isSuccessRun={game.data.level >= 2}
+        score={game.data.score}
+        level={game.data.level}
+        lines={game.data.linesCleared}
+        maxSpeed={game.data.dropInterval}
         onRestart={handleRestart}
       />
 

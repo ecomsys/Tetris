@@ -4,20 +4,20 @@ import { useNavigate } from "react-router-dom";
 export default function Rules() {
   const navigate = useNavigate();
 
-  const welcomeTitle = "Добро пожаловать в новую игру. Вот основные правила:";
+  const welcomeTitle =
+    "Добро пожаловать в Tetris. Управляй фигурами, заполняй линии и набирай максимум очков.";
 
   const rulesList = [
-    "Правило 1",
-    "Правило 2",
-    "Правило 3",
-    "Правило 4",
-    "Правило 5",
-    "Правило 6",
-    "Правило 7",
-    "Правило 8",
-    "Правило 9",
+    "Фигуры падают сверху — управляй их положением и поворотом",
+    "Заполняй горизонтальные линии полностью, чтобы они исчезали",
+    "За каждую очищенную линию ты получаешь очки",
+    "Очистка нескольких линий одновременно даёт больше очков",
+    "Скорость падения фигур постепенно увеличивается",
+    "Игра заканчивается, если фигуры достигают верхней границы",
+    "Планируй размещение заранее — случайность играет важную роль",
+    "Используй повороты, чтобы идеально вписывать фигуры",
+    "Старайся не оставлять пустые “дырки” в структуре",
   ];
-
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -50,9 +50,8 @@ export default function Rules() {
 
       {/* Вступление */}
       <p
-        className={`text-xl md:text-2xl max-w-2xl text-teal-900 text-center transition-all duration-500 ease-out ${
-          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-        }`}
+        className={`text-xl md:text-2xl max-w-2xl text-teal-900 text-center transition-all duration-500 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
       >
         {welcomeTitle}
       </p>

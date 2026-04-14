@@ -5,7 +5,7 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/games/game/",
+  base: "/games/tetris/",
   plugins: [tailwindcss(), react()],
   resolve: {
     alias: {
@@ -21,7 +21,7 @@ export default defineConfig({
     strictPort: true,
   },
   build: {
-    outDir: './docs',
+    outDir: './dist',
     emptyOutDir: true
   }
 });

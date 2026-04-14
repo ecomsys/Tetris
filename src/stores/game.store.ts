@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import type { GameState, ID, GameStatus } from "../types/core.types";
-import type { TetrisState } from "@/game/tetris/types/tetris.types";
+import type { TetrisState } from "@/game/types/tetris.types";
 
-import { createTetrisState } from "@/game/tetris/factory/createTetrisState";
+import { createTetrisState } from "@/game/factory/createTetrisState";
 
 /* ===================== */
 /* ===== GAME STORE ==== */

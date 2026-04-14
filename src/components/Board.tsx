@@ -1,8 +1,9 @@
-import type { Tetromino, CellValue } from "@/game/tetris/types/tetris.types";
+import type { Tetromino, CellValue } from "@/game/types/tetris.types";
 
 interface Props {
   board: CellValue[][],
   piece?: Tetromino | null;
+  orderClasses?: string;
 }
 
 function mergeBoardWithPiece(
@@ -37,7 +38,7 @@ const COLORS = {
   L: "bg-orange-400",
 };
 
-export function Board({ board, piece }: Props) {
+export function Board({ board, piece, orderClasses }: Props) {
   const renderBoard = piece
     ? mergeBoardWithPiece(board, piece)
     : board;
@@ -46,11 +47,11 @@ export function Board({ board, piece }: Props) {
   const cols = board[0].length;
 
   return (
-    <div className="h-full min-h-[25rem] flex justify-center items-center">
+    <div className={`${orderClasses} flex-1 sm:flex-[initial] min-h-0 sm:min-h-[21rem]  md:min-h-[28rem] xl:min-h-[32.5rem] flex justify-center items-center`}>
 
       {/* FRAME */}
       <div
-        className="h-full bg-neutral-900 border-[20px] border-neutral-700 rounded-b-2xl shadow-2xl flex"
+        className="h-full border-[0.9375rem] xl:border-[1.25rem] border-teal-900 rounded-b-xl flex"
         style={{
           aspectRatio: `${cols} / ${rows}`,
         }}
@@ -81,7 +82,7 @@ export function Board({ board, piece }: Props) {
               if (cell !== 0) {
                 const color = COLORS[cell as keyof typeof COLORS];
 
-                cellClass = `${color} ${isActive ? "" : "opacity-70"} shadow-[inset_0_2px_6px_rgba(0,0,0,0.6),inset_0_-2px_4px_rgba(255,255,255,0.2)]`;
+                cellClass = `${color} ${isActive ? "" : "opacity-80"} shadow-[inset_0_0.125rem_0.375rem_rgba(0,0,0,0.6),inset_0_-0.125rem_0.25rem_rgba(255,255,255,0.2)]`;
               }
               return (
                 <div

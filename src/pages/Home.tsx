@@ -1,14 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-// import { useFullscreen } from "@/hooks/useFullScreen";
+import { useFullscreen } from "@/hooks/useFullScreen";
 
 export default function Home() {
   const navigate = useNavigate();
-  // const { openFullscreen } = useFullscreen();
+  const { openFullscreen } = useFullscreen();
 
 
-  const title = "Игра";
-  const description = "Привлекательное описание к игре";
+  const title = "Tetris";
+  const description =
+    "Классическая игра Tetris ! Cкладывай фигуры, заполняй линии и набирай максимум очков прямо в браузере.";
 
 
   const baseBtn =
@@ -56,7 +57,7 @@ export default function Home() {
         </h1>
 
         {/* Подзаголовок / описание */}
-        <p className="text-xl xs:text-2xl md:text-3xl font-semibold text-teal-900 text-center max-w-[85%] sm:max-w-3xl mb-3 leading-[1]">
+        <p className="text-xl xs:text-2xl md:text-3xl font-semibold text-teal-900 text-center max-w-[85%] sm:max-w-2xl mb-3 leading-[1]">
           {description}
         </p>
 
@@ -64,7 +65,7 @@ export default function Home() {
         <button
           className={`${baseBtn} ${tealBtn} cursor-pointer`}
           onClick={() => {
-            // openFullscreen();
+            openFullscreen();
             navigate("/game");
           }}
         >

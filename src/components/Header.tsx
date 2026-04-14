@@ -89,14 +89,17 @@ export default function GameHeader({
   /* ===================== */
 
   return (
-    <div className="w-full min-w-[20rem]">
-      <div
-        className={`relative bg-gradient-to-r from-teal-500 via-teal-600 to-teal-700 border border-teal-600/40 shadow-lg flex items-center justify-center gap-2 px-3 py-3 rounded-lg ${className}`}
-      >
+    <div className="w-full max-w-3xl mx-auto min-w-[20rem]">
+      <div className={`relative bg-gradient-to-b from-teal-600 to-teal-900 border-teal-600/40 shadow-[0_0.625rem_1.25rem_rgba(0,0,0,0.25),0_0.25rem_0.375rem_rgba(0,0,0,0.15)]      
+      flex items-center flex-row justify-center ${className}
+      gap-2 px-1 py-1 mx-auto w-full      
+      sm:gap-3 sm:px-3 sm:py-4 rounded-lg sm:rounded-2xl 
+      md:px-6 md:justify-evenly md:gap-6`}>
+
         {/* LEFT */}
         <div className="flex items-center gap-4">
           <button onClick={handleHome}>
-            <svg className="w-10 h-10 text-white hover:text-yellow-400 transition active:scale-95 cursor-pointer">
+            <svg className="w-8 h-8 text-white hover:text-yellow-400 transition active:scale-95 cursor-pointer">
               <use
                 xlinkHref={`${import.meta.env.BASE_URL}sprite/sprite.svg#home`}
               />
@@ -104,7 +107,7 @@ export default function GameHeader({
           </button>
 
           <NavLink to="/rules">
-            <svg className="w-10 h-10 text-white hover:text-yellow-400 transition active:scale-95 cursor-pointer">
+            <svg className="w-8 h-8 text-white hover:text-yellow-400 transition active:scale-95 cursor-pointer">
               <use
                 xlinkHref={`${import.meta.env.BASE_URL}sprite/sprite.svg#info`}
               />
@@ -112,7 +115,7 @@ export default function GameHeader({
           </NavLink>
 
           <button onClick={onRestart}>
-            <svg className="w-10 h-10 text-white hover:text-yellow-400 transition active:scale-95 cursor-pointer">
+            <svg className="w-8 h-8 text-white hover:text-yellow-400 transition active:scale-95 cursor-pointer">
               <use
                 xlinkHref={`${import.meta.env.BASE_URL}sprite/sprite.svg#refresh`}
               />
@@ -123,7 +126,7 @@ export default function GameHeader({
         {/* TITLE */}
         {gameName && (
           <div className="flex-1 text-center">
-            <h2 className="text-4xl font-bold text-white">
+            <h2 className="hidden xs:block text-3xl lg:text-4xl leading-[0.5] text-white font-extrabold">
               {gameName}
             </h2>
           </div>
@@ -134,7 +137,7 @@ export default function GameHeader({
           {/* PAUSE */}
           <button onClick={handlePause} className="active:scale-95 cursor-pointer">
             <svg
-              className={`w-8 h-8 transition ${isPaused ? "text-amber-500" : "text-white"
+              className={`w-6 h-6 transition ${isPaused ? "text-amber-500" : "text-white"
                 }`}
             >
               <use
@@ -146,7 +149,7 @@ export default function GameHeader({
           {/* SOUND */}
           <button onClick={toggleSound} className="active:scale-95 cursor-pointer">
             <svg
-              className={`w-10 h-10 transition ${soundEnabled ? "text-white" : "text-amber-500"
+              className={`w-8 h-8 transition ${soundEnabled ? "text-white" : "text-amber-500"
                 }`}
             >
               <use
@@ -158,7 +161,7 @@ export default function GameHeader({
           {/* MUSIC */}
           <button onClick={toggleMusic} className="active:scale-95 cursor-pointer">
             <svg
-              className={`w-10 h-10 transition ${musicEnabled ? "text-amber-500" : "text-white"
+              className={`w-8 h-8 transition ${musicEnabled ? "text-amber-500" : "text-white"
                 }`}
             >
               <use

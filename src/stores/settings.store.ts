@@ -88,9 +88,12 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: "game-settings",
       partialize: (state) => ({
-        // сохраняем всё кроме music
-        ...state,
         musicEnabled: false,
+        soundEnabled: state.soundEnabled,
+        volume: state.volume,
+        language: state.language,
+        theme: state.theme,
+        debug: state.debug,
       }),
     }
   )
