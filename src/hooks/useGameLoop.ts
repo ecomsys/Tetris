@@ -5,6 +5,9 @@ import { useSettingsStore } from "@/stores/settings.store";
 import { BaseUrlResolver } from "@/utils/resolvers";
 import { playSound } from "@/audio/manager";
 
+import { InputController } from "@/game/engine/input/input.controller";
+import { forceEndGesture } from "@/hooks/useSwipeControls";
+
 const FRAME_TIME = 16;
 
 export function useGameLoop(onLevelUp: () => void) {
@@ -12,7 +15,7 @@ export function useGameLoop(onLevelUp: () => void) {
 
   const lockSrc = BaseUrlResolver("/audio/lock.mp3");
   const clearSrc = BaseUrlResolver("/audio/clear.mp3");
-  
+
   useEffect(() => {
     let lastTime = performance.now();
     let accumulator = 0;
@@ -43,7 +46,10 @@ export function useGameLoop(onLevelUp: () => void) {
 
       if (sound && nextState.events?.pieceLocked) {
         playSound(lockSrc);
+        InputController.resetAll();
+        forceEndGesture();
       }
+
 
       if (sound && nextState.events?.linesCleared) {
         playSound(clearSrc);

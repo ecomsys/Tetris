@@ -1,111 +1,155 @@
 import { useEffect, useRef } from "react";
 import { InputController } from "@/game/engine/input/input.controller";
+import { INPUT_CONFIG } from "@/game/engine/input/input.config";
 
 type Point = { x: number; y: number };
 
-const SWIPE_X = 40;
-const SWIPE_Y = 60;
-const TAP_MAX_TIME = 250;
+const SWIPE_X = 22;
+const SWIPE_Y = 28;
+const TAP_TIME = 180;
 
-// 2 константы ТОЛЬКО для hardDrop
-const HARD_DROP_MIN_DISTANCE = 100;
-const HARD_DROP_MAX_TIME = 200;
+const ARR_DELAY = INPUT_CONFIG.DAS_DELAY; 
+const ARR_RATE = 70;
+
+const HARD_DROP_MIN_DISTANCE = 20;
+
+export let forceEndGesture = () => { };
 
 export function useSwipeControls() {
-    const lockedAxis = useRef<"x" | "y" | null>(null);
-    const activeDirection = useRef<"left" | "right" | null>(null);
-
     const start = useRef<Point | null>(null);
     const startTime = useRef(0);
+
+    const singleStepConsumed = useRef(false);
+
+    const gestureActive = useRef(false);
+
+    const axis = useRef<"x" | "y" | null>(null);
+    const dir = useRef<"left" | "right" | null>(null);
+
+    const lastMove = useRef(0);
+    const repeatStarted = useRef(false);
+
     const rotated = useRef(false);
 
-    const STEP_COOLDOWN = 140;
-    const lastMoveTime = useRef(0);
-    const movedThisGesture = useRef(false);
+    // -------------------------
+    // external reset
+    // -------------------------
+    useEffect(() => {
+        forceEndGesture = () => {
+            gestureActive.current = false;
+            start.current = null;
 
+            axis.current = null;
+            dir.current = null;
+
+            lastMove.current = 0;
+            repeatStarted.current = false;
+
+            rotated.current = false;
+        };
+    }, []);
+
+    // -------------------------
+    // touch start
+    // -------------------------
     useEffect(() => {
         function onTouchStart(e: TouchEvent) {
-            lockedAxis.current = null;
+            gestureActive.current = true;
 
             const t = e.touches[0];
 
             start.current = { x: t.clientX, y: t.clientY };
             startTime.current = Date.now();
-            rotated.current = false;
 
-            movedThisGesture.current = false;
+            axis.current = null;
+            dir.current = null;
+
+            lastMove.current = 0;
+            repeatStarted.current = false;
+            rotated.current = false;
         }
 
+        // -------------------------
+        // touch move
+        // -------------------------
         function onTouchMove(e: TouchEvent) {
-            if (!start.current) return;
+            if (!gestureActive.current || !start.current) return;
 
             const t = e.touches[0];
 
             const dx = t.clientX - start.current.x;
             const dy = t.clientY - start.current.y;
 
-            if (!lockedAxis.current) {
-                lockedAxis.current =
-                    Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+            // axis lock
+            if (!axis.current) {
+                axis.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
             }
 
-            // ======================
-            // X axis
-            // ======================
-            if (lockedAxis.current === "x") {
+            // =========================
+            // HORIZONTAL MOVE
+            // =========================
+            if (axis.current === "x") {
                 InputController.setKey("down", false);
 
                 const now = Date.now();
-                const direction: "left" | "right" = dx > 0 ? "right" : "left";
+                const newDir: "left" | "right" = dx > 0 ? "right" : "left";
 
-                const moved = Math.abs(dx);
+                const absDx = Math.abs(dx);
 
-                // ВАЖНО: смена направления
-                if (activeDirection.current && activeDirection.current !== direction) {
-                    // сброс старого направления
-                    InputController.setKey(activeDirection.current, false);
+                // смена направления
+                if (dir.current && dir.current !== newDir) {
+                    InputController.setKey(dir.current, false);
 
-                    // reset логики удержания
-                    movedThisGesture.current = false;
-                    lastMoveTime.current = now;
+                    repeatStarted.current = false;
+                    lastMove.current = now;
 
-                    activeDirection.current = direction;
+                    singleStepConsumed.current = false; // 👈 ВОТ ЭТО ВАЖНО
                 }
 
-                if (!activeDirection.current) {
-                    activeDirection.current = direction;
+                dir.current = newDir;
+
+                // =========================
+                // 1) SINGLE STEP (1 клетка)
+                // =========================
+                if (!singleStepConsumed.current && absDx > SWIPE_X) {
+                    InputController.setKey(newDir, true);
+
+                    singleStepConsumed.current = true;
+                    lastMove.current = now;
+
+                    return; // 👈 КЛЮЧ: не даём уйти в ARR сразу
                 }
 
-                // 1) первый шаг
-                if (!movedThisGesture.current && moved > SWIPE_X) {
-                    InputController.setKey(direction, true);
-                    movedThisGesture.current = true;
-                    lastMoveTime.current = now;
-                }
+                // =========================
+                // 2) HOLD (DAS + ARR) — твоя логика сохранена
+                // =========================
+                if (singleStepConsumed.current) {
+                    const interval = now - lastMove.current;
 
-                // 2) удержание
-                if (
-                    movedThisGesture.current &&
-                    now - lastMoveTime.current > STEP_COOLDOWN
-                ) {
-                    InputController.setKey(direction, true);
-                    lastMoveTime.current = now;
+                    if (!repeatStarted.current) {
+                        if (interval > ARR_DELAY) {
+                            repeatStarted.current = true;
+                            lastMove.current = now;
+                        }
+                    } else {
+                        if (interval > ARR_RATE) {
+                            InputController.setKey(newDir, true);
+                            lastMove.current = now;
+                        }
+                    }
                 }
             }
-
-            // ======================
-            // Y axis
-            // ======================
-            if (lockedAxis.current === "y") {
+            // =========================
+            // VERTICAL MOVE
+            // =========================
+            if (axis.current === "y") {
                 InputController.setKey("left", false);
                 InputController.setKey("right", false);
 
-                if (dy > SWIPE_Y) {
-                    InputController.setKey("down", true);
-                }
+                InputController.setKey("down", dy > SWIPE_Y);
             }
 
-            // UP → ROTATE (как у тебя было)
+            // rotate swipe up
             if (
                 dy < -SWIPE_Y &&
                 Math.abs(dy) > Math.abs(dx) &&
@@ -116,53 +160,47 @@ export function useSwipeControls() {
             }
         }
 
+        // -------------------------
+        // touch end
+        // -------------------------
         function onTouchEnd(e: TouchEvent) {
-            const duration = Date.now() - startTime.current;
-
             const t = e.changedTouches[0];
+
             const end = { x: t.clientX, y: t.clientY };
 
             const dx = end.x - (start.current?.x ?? end.x);
             const dy = end.y - (start.current?.y ?? end.y);
 
-            const absDx = Math.abs(dx);
-            const absDy = Math.abs(dy);
+            const duration = Date.now() - startTime.current;
 
             const isTap =
-                duration < TAP_MAX_TIME &&
-                absDx < SWIPE_X &&
-                absDy < SWIPE_Y;
+                duration < TAP_TIME &&
+                Math.abs(dx) < SWIPE_X &&
+                Math.abs(dy) < SWIPE_Y;
 
-            // ======================
-            // TAP → ROTATE
-            // ======================
             if (isTap && !rotated.current) {
                 InputController.press("rotate");
             }
 
-            // ======================
-            // HARD DROP (ДОБАВИЛИ ВОТ ЭТО)
-            // ======================
-            const isFastDownSwipe =
-                dy > HARD_DROP_MIN_DISTANCE &&
-                duration < HARD_DROP_MAX_TIME;
+            const speed = dy / Math.max(duration, 1);
 
-            if (isFastDownSwipe) {
+            if (dy > HARD_DROP_MIN_DISTANCE && speed > 0.35) {
                 InputController.press("hardDrop");
             }
 
-            // reset
+            // RESET INPUT
             InputController.setKey("left", false);
             InputController.setKey("right", false);
             InputController.setKey("down", false);
 
+            gestureActive.current = false;
             start.current = null;
-            rotated.current = false;
-            lockedAxis.current = null;
 
-            movedThisGesture.current = false;
-            lastMoveTime.current = 0;
-            activeDirection.current = null;
+            axis.current = null;
+            dir.current = null;
+
+            repeatStarted.current = false;
+            rotated.current = false;
         }
 
         window.addEventListener("touchstart", onTouchStart, { passive: true });
